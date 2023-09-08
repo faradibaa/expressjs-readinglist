@@ -1,0 +1,152 @@
+import express from "express";
+import bodyParser from "body-parser";
+import response from "./response.js";
+import db from "./connection.js";
+
+const app = express();
+const port = 8000;
+
+const table_name = "my_reading_list";
+
+app.use(bodyParser.json());
+
+app.get("/", (req, res) => {
+    let sql = `SELECT id, title, author, current_page FROM ${table_name};`;
+    db.query(sql, (err, results) => {
+        // if table is not empty
+        if(results.length !== 0) {
+            const title = req.query.title;
+            const author = req.query.author;
+
+            // show list based on title and author of the book
+            if(title && author) {
+                sql = `SELECT * FROM ${table_name} WHERE title = '${title}' AND author = '${author}';`;
+                db.query(sql, (err, results) => {
+                    response(200, results, "success", res);
+                });
+            }
+            // show list based on title
+            else if(title) {
+                sql = `SELECT * FROM ${table_name} WHERE title = '${title}';`;
+                db.query(sql, (err, results) => {
+                    response(200, results, "success", res);
+                });
+            }
+            // show list based on author
+            else if(author) {
+                sql = `SELECT * FROM ${table_name} WHERE author = '${author}';`;
+                db.query(sql, (err, results) => {
+                    response(200, results, "success", res);
+                });
+            }
+            // show overview (id, title, author) of all books in the list
+            else if(Object.keys(req.query).length === 0) {
+                response(200, results, "success", res);
+            }
+            // tell client if the query can't be used
+            else {
+                response(404, "Can't use this query.", "error", res);
+            }
+        }
+        // if table is empty
+        else {
+            response(200, "Your list is still empty. It's time to start your reading journey!", "success", res);
+        }
+    });
+});
+
+app.post("/", (req, res) => {
+    const { title, author, publisher, total_page, current_page, status } = req.body;
+    const sql = `INSERT INTO ${table_name} (title, author, publisher, total_page, current_page, status)
+                VALUES ('${title}', '${author}', '${publisher}', ${total_page}, ${current_page}, '${status}');`;
+    
+    db.query(sql, (err, results) => {
+        if(results?.affectedRows) {
+            const data = {
+                isSuccess: results.affectedRows,
+                id: results.insertId,
+            }
+            response(200, data, "New book has successfully added to the list!", res);
+        }
+    });
+});
+
+app.put("/", (req, res) => {
+    const { title, author, publisher, total_page, current_page, status } = req.body;
+
+    const sql = `UPDATE ${table_name}
+                SET total_page = ${total_page}, current_page = ${current_page}, status = '${status}'
+                WHERE title = '${title}' AND author = '${author}' AND publisher = '${publisher}';`;
+
+    db.query(sql, (err, results) => {
+        if(err) response(500, "Invalid request", "error", res);
+        if(results?.affectedRows) {
+            const data = {
+                isSuccess: results.affectedRows,
+                info: results.info,
+            }
+            response(200, data, `Data of ${title} by ${author} has been successfully updated!`, res);
+        }
+        else {
+            response(404, `Book with title ${title} and author name ${author} was not found.`, "error", res);
+        }
+    });
+});
+
+app.delete("/", (req, res) => {
+    const { id, title, author } = req.body;
+    let sql = ``;
+
+    if(title && author) {
+        sql = `SELECT COUNT(*) as count FROM ${table_name} WHERE title = '${title}' AND author = '${author}';`;
+        db.query(sql, (err, results) => {
+            // if there is just one data with the sent title and author
+            if(results[0].count === 1) {
+                sql = `DELETE FROM ${table_name} WHERE title = '${title}' AND author = '${author}';`;
+                db.query(sql, (err, results) => {
+                    if(error) response(500, "invalid", "error", res);
+                    if(results?.affectedRows) {
+                        const data = {
+                            isDeleted: result.affectedRows,
+                        }
+                        response(200, data, "Data has been successfully deleted!", res);
+                    }
+                    else {
+                        response(404, `There is no book with title = ${title} and author ${author}`, "error", res);
+                    }
+                });
+            }
+            // if there are more than one data of the sent title and author
+            else if(results[0].count > 1) {
+                sql = `SELECT * FROM ${table_name} WHERE title = '${title}' AND author = '${author}';`;
+                db.query(sql, (err, results) => {
+                    response(200, 
+                            `There is more than one book with same title and author. Please choose based on ID.\n${JSON.stringify(results)}`,
+                            "success", res);
+                });
+            }
+            else {
+                response(404, `There is no book with title ${title} with author ${author}`, "error", res);
+            }
+        });
+    }
+    else if(id) {
+        sql = `DELETE FROM ${table_name} WHERE id = ${id}`;
+        db.query(sql, (err, results) => {
+            if(err) response(500, "invalid", "error", res);
+            if(results?.affectedRows) {
+                const data = {
+                    isDeleted: results.affectedRows,
+                }
+                response(200, data, "Data has been successfully deleted!", res);
+            }
+            else {
+                response(404, `There is no book with ID ${id}`, "error", res);
+            }
+        });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
