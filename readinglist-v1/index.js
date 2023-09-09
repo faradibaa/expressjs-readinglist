@@ -58,9 +58,9 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     const { title, author, publisher, total_page, current_page, status } = req.body;
     const sql = `INSERT INTO ${table_name} (title, author, publisher, total_page, current_page, status)
-                VALUES ('${title}', '${author}', '${publisher}', ${total_page}, ${current_page}, '${status}');`;
+                VALUES (?, ?, ?, ?, ?, ?);`;
     
-    db.query(sql, (err, results) => {
+    db.query(sql, [title, author, publisher, total_page, current_page, status], (err, results) => {
         if(results?.affectedRows) {
             const data = {
                 isSuccess: results.affectedRows,
@@ -72,13 +72,13 @@ app.post("/", (req, res) => {
 });
 
 app.put("/", (req, res) => {
-    const { title, author, publisher, total_page, current_page, status } = req.body;
+    const { title, author, publisher, current_page, status } = req.body;
 
     const sql = `UPDATE ${table_name}
-                SET total_page = ${total_page}, current_page = ${current_page}, status = '${status}'
-                WHERE title = '${title}' AND author = '${author}' AND publisher = '${publisher}';`;
+                SET current_page = ?, status = ?
+                WHERE title = ? AND author = ? AND publisher = ?;`;
 
-    db.query(sql, (err, results) => {
+    db.query(sql, [current_page, status, title, author, publisher], (err, results) => {
         if(err) response(500, "Invalid request", "error", res);
         if(results?.affectedRows) {
             const data = {
@@ -98,16 +98,16 @@ app.delete("/", (req, res) => {
     let sql = ``;
 
     if(title && author) {
-        sql = `SELECT COUNT(*) as count FROM ${table_name} WHERE title = '${title}' AND author = '${author}';`;
-        db.query(sql, (err, results) => {
+        sql = `SELECT COUNT(*) as count FROM ${table_name} WHERE title = ? AND author = ?;`;
+        db.query(sql, [title, author], (err, results) => {
             // if there is just one data with the sent title and author
             if(results[0].count === 1) {
-                sql = `DELETE FROM ${table_name} WHERE title = '${title}' AND author = '${author}';`;
-                db.query(sql, (err, results) => {
-                    if(error) response(500, "invalid", "error", res);
+                sql = `DELETE FROM ${table_name} WHERE title = ? AND author = ?;`;
+                db.query(sql, [title, author], (err, results) => {
+                    if(err) response(500, "invalid", "error", res);
                     if(results?.affectedRows) {
                         const data = {
-                            isDeleted: result.affectedRows,
+                            isDeleted: results.affectedRows,
                         }
                         response(200, data, "Data has been successfully deleted!", res);
                     }
@@ -118,8 +118,8 @@ app.delete("/", (req, res) => {
             }
             // if there are more than one data of the sent title and author
             else if(results[0].count > 1) {
-                sql = `SELECT * FROM ${table_name} WHERE title = '${title}' AND author = '${author}';`;
-                db.query(sql, (err, results) => {
+                sql = `SELECT * FROM ${table_name} WHERE title = ? AND author = ?;`;
+                db.query(sql, [title, author], (err, results) => {
                     response(200, 
                             `There is more than one book with same title and author. Please choose based on ID.\n${JSON.stringify(results)}`,
                             "success", res);
@@ -131,8 +131,8 @@ app.delete("/", (req, res) => {
         });
     }
     else if(id) {
-        sql = `DELETE FROM ${table_name} WHERE id = ${id}`;
-        db.query(sql, (err, results) => {
+        sql = `DELETE FROM ${table_name} WHERE id = ?`;
+        db.query(sql, [id], (err, results) => {
             if(err) response(500, "invalid", "error", res);
             if(results?.affectedRows) {
                 const data = {

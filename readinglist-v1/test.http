@@ -29,12 +29,12 @@ POST http://{{server}}/
 Content-Type: application/json
 
 {
-    "title":"Gagal Menjadi Manusia", 
-    "author":"Dazai Osamu", 
-    "publisher":"Penerbit Lain", 
-    "total_page":156, 
+    "title":"I Am A Cat", 
+    "author":"Soseki Natsume", 
+    "publisher":"Immortal Publishing", 
+    "total_page":532, 
     "current_page":0, 
-    "status":"Reading"
+    "status":"TBR"
 }
 ###
 
@@ -47,7 +47,7 @@ Content-Type: application/json
     "author":"Dazai Osamu", 
     "publisher":"Penerbit Mai", 
     "total_page":156, 
-    "current_page":100, 
+    "current_page":90, 
     "status":"Reading"
 }
 ###
@@ -91,5 +91,5 @@ DELETE http://{{server}}/
 Content-Type: application/json
 
 {
-    "id":8
+    "id":9
 }

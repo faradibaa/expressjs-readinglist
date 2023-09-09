@@ -27,6 +27,8 @@ User can:
 - `(title && author)`, `(title)`, `(author)`: to check if there are title and author queries/
 if there is just title or author query.
 - `(Object.keys(req.query).length === 0)`: **true** if there is no sent query.
+- Parameterized Queries: separate SQL code from user input. Use "?" marks to replace keywords/values
+and place those keywords/values to an array in the db.query() parameter.
 
 # Problems
 1. When send HTTP request with *title* and *not accepted query*
