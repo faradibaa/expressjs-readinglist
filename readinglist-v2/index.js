@@ -1,7 +1,8 @@
 import express from "express";
 import bodyParser from "body-parser";
 import response from "./response.js";
-import db from "./connection.js";
+import dbQuery from "./dbQuery.js";
+import throwError from "./throwError.js";
 
 const app = express();
 const port = 8000;
@@ -10,171 +11,180 @@ const table_name = "my_reading_list";
 
 app.use(bodyParser.json());
 
-app.get("/", (req, res, next) => {
+app.get("/", async (req, res, next) => {
     try {
-        let sql = `SELECT id, title, author, current_page FROM ${table_name};`;
-        db.query(sql, (err, results) => {
-            if(err) {
-                throw err;
-            }
-            // if table is not empty
-            if(results.length !== 0) {
-                const title = req.query.title;
-                const author = req.query.author;
+        const title = req.query.title;
+        const author = req.query.author;
 
-                // show list based on title and author of the book
-                if(title && author) {
-                    sql = `SELECT * FROM ${table_name} WHERE title = '${title}' AND author = '${author}';`;
-                    db.query(sql, (err, results) => {
-                        response(200, results, "success", res);
-                    });
-                }
-                // show list based on title
-                else if(title) {
-                    sql = `SELECT * FROM ${table_name} WHERE title = '${title}';`;
-                    db.query(sql, (err, results) => {
-                        response(200, results, "success", res);
-                    });
-                }
-                // show list based on author
-                else if(author) {
-                    sql = `SELECT * FROM ${table_name} WHERE author = '${author}';`;
-                    db.query(sql, (err, results) => {
-                        response(200, results, "success", res);
-                    });
-                }
-                // show overview (id, title, author) of all books in the list
-                else if(Object.keys(req.query).length === 0) {
-                    response(200, results, "success", res);
-                }
-                // tell client if the query can't be used
-                // else {
-                //     response(404, "Can't use this query.", "error", res);
-                // }
-            }
-            // if table is empty
-            else {
-                response(200, "Your list is still empty. It's time to start your reading journey!", "success", res);
-            }
-        });
+        let sql = "";
+        let errorMessage = "";
+
+        sql = `SELECT * FROM ${table_name} `;
+
+        if(Object.keys(req.query).length === 0) {
+            errorMessage = "Your reading list is empty. It's time to start your reading journey!";
+        }
+        else if(title && author) {
+            sql += `WHERE title = '${title}' AND author = '${author}'`;
+            errorMessage = `Book(s) with title ${title} by ${author} was not found.`;
+        }
+        else if(title) {
+            sql += `WHERE title = '${title}'`;
+            errorMessage = `Book(s) with title ${title} was not found.`;
+        }
+        else if(author) {
+            sql += `WHERE author = '${author}'`;
+            errorMessage = `Book(s) with author name ${author} was not found.`;
+        }
+        else {
+            throwError("Query was not acceptable.", 400);
+        }
+
+        const result = await dbQuery(`${sql};`);
+        if(result.length === 0) {
+            throwError(errorMessage, 404);
+        }
+        response(200, result, "successfully received data from database", res);
     }
-    catch(err) {
-        next(err);
+    catch(error) {
+        next(error);
     }
 });
 
-app.post("/", (req, res) => {
+app.post("/", async (req, res, next) => {
     try {
+        let sql = "";
+
         const { title, author, publisher, total_page, current_page, status } = req.body;
-        const sql = `INSERT INTO ${table_name} (title, author, publisher, total_page, current_page, status)
-                    VALUES (?, ?, ?, ?, ?, ?);`;
+
+        // all parameters should be sent
+        if(!title || !author || !publisher || !total_page || !current_page || !status) {
+            throwError("All required parameters must be provided.", 400);
+        }
+
+        // validation for total_page and current_page
+        if(!Number.isInteger(total_page) || total_page < 0) {
+            throwError("Invalid value for total_page", 400);
+        }
+
+        // validation for current_page
+        if(!Number.isInteger(current_page) || current_page < 0 || current_page > total_page) {
+            throwError("Invalid value for current_page", 400);
+        }
         
-        db.query(sql, [title, author, publisher, total_page, current_page, status], (err, results) => {
-            if(results?.affectedRows) {
-                const data = {
-                    isSuccess: results.affectedRows,
-                    id: results.insertId,
-                }
-                response(200, data, "New book has successfully added to the list!", res);
+        sql = `INSERT INTO ${table_name} (title, author, publisher, total_page, current_page, status)
+                VALUES (?, ?, ?, ?, ?, ?);`;
+        paramQuery = [title, author, publisher, total_page, current_page, status];
+
+        const result = await dbQuery(sql, paramQuery);
+        
+        if(result?.affectedRows) {
+            const data = {
+                isSuccess: result.affectedRows,
+                id: result.insertId,
             }
-        });
+            response(201, data, "New book has successfully added to the list!", res);
+        }
     }
-    catch {
-        next();
+    catch(error) {
+        next(error);
     }
 });
 
-app.put("/", (req, res) => {
+app.put("/", async (req, res, next) => {
     try {
         const { title, author, publisher, current_page, status } = req.body;
 
-        const sql = `UPDATE ${table_name}
+        // all parameters should be sent
+        if(!title || !author || !publisher || !current_page || !status) {
+            throwError("All required parameters must be provided.", 400);
+        }
+
+        // validation for current_page
+        if(!Number.isInteger(current_page) || current_page < 0) {
+            throwError("Invalid value for current_page", 400);
+        }
+
+        let sql = `UPDATE ${table_name}
                     SET current_page = ?, status = ?
                     WHERE title = ? AND author = ? AND publisher = ?;`;
+        let paramQuery = [current_page, status, title, author, publisher];
 
-        db.query(sql, [current_page, status, title, author, publisher], (err, results) => {
-            // if(err) response(500, "Invalid request", "error", res);
-            if(results?.affectedRows) {
-                const data = {
-                    isSuccess: results.affectedRows,
-                    info: results.info,
-                }
-                response(200, data, `Data of ${title} by ${author} has been successfully updated!`, res);
-            }
-            else {
-                // response(404, `Book with title ${title} and author name ${author} was not found.`, "error", res);
-            }
-        });
+        const result = await dbQuery(sql, paramQuery);
+
+        if(result?.affectedRows > 0) {
+            response(200, "", `Data of book ${title} by ${author} has been successfully updated!`, res);
+        }
+        else {
+            throwError("Failed to update data.", 500);
+        }
     }
-    catch {
-        next();
+    catch(error) {
+        next(error);
     }
 });
 
-app.delete("/", (req, res) => {
+app.delete("/", async (req, res, next) => {
     try {
         const { id, title, author } = req.body;
-    let sql = ``;
+        let sql = ``;
+        let paramQuery = [];
+        let data = "";
+        let message = "";
 
-    if(title && author) {
-        sql = `SELECT COUNT(*) as count FROM ${table_name} WHERE title = ? AND author = ?;`;
-        db.query(sql, [title, author], (err, results) => {
-            // if there is just one data with the sent title and author
-            if(results[0].count === 1) {
+        if(title && author) {
+            sql = `SELECT COUNT(*) as count FROM ${table_name} WHERE title = ? AND author = ?;`;
+            paramQuery = [title, author];
+
+            const result = await dbQuery(sql, paramQuery);
+
+            if(result[0].count === 1) {
                 sql = `DELETE FROM ${table_name} WHERE title = ? AND author = ?;`;
-                db.query(sql, [title, author], (err, results) => {
-                    if(err) response(500, "invalid", "error", res);
-                    if(results?.affectedRows) {
-                        const data = {
-                            isDeleted: results.affectedRows,
-                        }
-                        response(200, data, "Data has been successfully deleted!", res);
+
+                const nextResult = await dbQuery(sql, paramQuery);
+                
+                if(nextResult?.affectedRows) {
+                    data = {
+                        isDeleted: nextResult.affectedRows,
                     }
-                    // else {
-                    //     response(404, `There is no book with title = ${title} and author ${author}`, "error", res);
-                    // }
-                });
-            }
-            // if there are more than one data of the sent title and author
-            else if(results[0].count > 1) {
-                sql = `SELECT * FROM ${table_name} WHERE title = ? AND author = ?;`;
-                db.query(sql, [title, author], (err, results) => {
-                    response(200, 
-                            `There is more than one book with same title and author. Please choose based on ID.\n${JSON.stringify(results)}`,
-                            "success", res);
-                });
-            }
-            // else {
-            //     response(404, `There is no book with title ${title} with author ${author}`, "error", res);
-            // }
-        });
-    }
-    else if(id) {
-        sql = `DELETE FROM ${table_name} WHERE id = ?`;
-        db.query(sql, [id], (err, results) => {
-            if(err) response(500, "invalid", "error", res);
-            if(results?.affectedRows) {
-                const data = {
-                    isDeleted: results.affectedRows,
                 }
-                response(200, data, "Data has been successfully deleted!", res);
+
+                message = "Data has been successfully deleted!";
             }
-            // else {
-            //     response(404, `There is no book with ID ${id}`, "error", res);
-            // }
-        });
+
+            else if(result[0].count > 1) {
+                sql = `SELECT * FROM ${table_name} WHERE title = ? AND author = ?;`;
+
+                const nextResult = await dbQuery(sql, paramQuery);
+
+                data = `There is more than one book with same title and author. Please choose based on ID.\n${JSON.stringify(nextResult)}`;
+                message = "success";
+            }
+        }
+        else if(id) {
+            sql = `DELETE FROM ${table_name} WHERE id = ?`;
+            paramQuery = [id];
+
+            const result = await dbQuery(sql, paramQuery);
+
+            if(result?.affectedRows) {
+                data = {
+                    isDeleted: result.affectedRows,
+                }
+            }
+            message = "Data has been successfully deleted!";
+        }
+        response(200, data, message, res);
     }
-    }
-    catch {
-        next();
+    catch(error) {
+        next(error);
     }
 });
 
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-    response(statusCode, "error", message, res);
-    next();
+    response(statusCode, "", message, res);
 });
 
 app.listen(port, () => {

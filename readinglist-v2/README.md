@@ -23,3 +23,7 @@ User can:
 
 # Improve
 - Make it more clean and try to add error-handling
+
+# Errors
+- If the database is not exist, the error message will be
+> throw err; // Unhandled 'error' event
