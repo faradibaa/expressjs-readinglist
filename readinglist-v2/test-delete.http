@@ -1,0 +1,29 @@
+@server = 127.0.0.1:8000
+
+### delete existing data by title & author name, but there is more than one data with the same title & author
+DELETE http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"Gagal Menjadi Manusia", 
+    "author":"Dazai Osamu"
+}
+###
+
+### delete non-existing data by title & author name
+DELETE http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"Kaki Kuda", 
+    "author":"Akutagawa Ryuunosuke"
+}
+###
+
+### delete based on ID
+DELETE http://{{server}}/
+Content-Type: application/json
+
+{
+    "id":6
+}

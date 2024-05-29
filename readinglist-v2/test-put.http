@@ -1,0 +1,41 @@
+@server = 127.0.0.1:8000
+
+### change existing data
+PUT http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"Gagal Menjadi Manusia", 
+    "author":"Dazai Osamu", 
+    "publisher":"Penerbit Mai", 
+    "total_page":156, 
+    "current_page":90, 
+    "status":"Reading"
+}
+###
+
+### change non-existing data
+PUT http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"Kaki Kuda", 
+    "author":"Akutagawa Ryuunosuke", 
+    "publisher":"Penerbit Mai", 
+    "total_page":0, 
+    "current_page":0, 
+    "status":"TBR"
+}
+###
+
+### there is a missing property
+PUT http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"Gagal Menjadi Manusia", 
+    "author":"Dazai Osamu", 
+    "publisher":"Penerbit Mai", 
+    "current_page":90
+}
+###

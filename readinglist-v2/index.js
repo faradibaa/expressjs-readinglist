@@ -19,21 +19,20 @@ app.get("/", async (req, res, next) => {
         let sql = "";
         let errorMessage = "";
 
-        sql = `SELECT * FROM ${table_name} `;
-
         if(Object.keys(req.query).length === 0) {
+            sql = `SELECT * FROM ${table_name};`;
             errorMessage = "Your reading list is empty. It's time to start your reading journey!";
         }
         else if(title && author) {
-            sql += `WHERE title = '${title}' AND author = '${author}'`;
+            sql = `SELECT * FROM ${table_name} WHERE title = '${title}' AND author = '${author}'`;
             errorMessage = `Book(s) with title ${title} by ${author} was not found.`;
         }
         else if(title) {
-            sql += `WHERE title = '${title}'`;
+            sql = `SELECT * FROM ${table_name} WHERE title = '${title}'`;
             errorMessage = `Book(s) with title ${title} was not found.`;
         }
         else if(author) {
-            sql += `WHERE author = '${author}'`;
+            sql = `SELECT * FROM ${table_name} WHERE author = '${author}'`;
             errorMessage = `Book(s) with author name ${author} was not found.`;
         }
         else {
@@ -54,11 +53,17 @@ app.get("/", async (req, res, next) => {
 app.post("/", async (req, res, next) => {
     try {
         let sql = "";
+        let paramQuery = [];
 
         const { title, author, publisher, total_page, current_page, status } = req.body;
 
         // all parameters should be sent
-        if(!title || !author || !publisher || !total_page || !current_page || !status) {
+        if(req.body.title === undefined || 
+            req.body.author === undefined || 
+            req.body.publisher === undefined || 
+            req.body.total_page === undefined || 
+            req.body.current_page === undefined || 
+            req.body.status === undefined) {
             throwError("All required parameters must be provided.", 400);
         }
 
@@ -79,11 +84,7 @@ app.post("/", async (req, res, next) => {
         const result = await dbQuery(sql, paramQuery);
         
         if(result?.affectedRows) {
-            const data = {
-                isSuccess: result.affectedRows,
-                id: result.insertId,
-            }
-            response(201, data, "New book has successfully added to the list!", res);
+            response(201, "", "New book has successfully added to the list!", res);
         }
     }
     catch(error) {
@@ -96,7 +97,11 @@ app.put("/", async (req, res, next) => {
         const { title, author, publisher, current_page, status } = req.body;
 
         // all parameters should be sent
-        if(!title || !author || !publisher || !current_page || !status) {
+        if(req.body.title === undefined || 
+            req.body.author === undefined || 
+            req.body.publisher === undefined || 
+            req.body.current_page === undefined || 
+            req.body.status === undefined) {
             throwError("All required parameters must be provided.", 400);
         }
 
@@ -113,10 +118,10 @@ app.put("/", async (req, res, next) => {
         const result = await dbQuery(sql, paramQuery);
 
         if(result?.affectedRows > 0) {
-            response(200, "", `Data of book ${title} by ${author} has been successfully updated!`, res);
+            response(200, "", `Data of book ${title} by author ${author} and publised by ${publisher} has been successfully updated!`, res);
         }
         else {
-            throwError("Failed to update data.", 500);
+            throwError(`Failed to update data. ${title} by author ${author} and publised by ${publisher} was not found.`, 400);
         }
     }
     catch(error) {
@@ -132,49 +137,55 @@ app.delete("/", async (req, res, next) => {
         let data = "";
         let message = "";
 
-        if(title && author) {
-            sql = `SELECT COUNT(*) as count FROM ${table_name} WHERE title = ? AND author = ?;`;
-            paramQuery = [title, author];
-
-            const result = await dbQuery(sql, paramQuery);
-
-            if(result[0].count === 1) {
-                sql = `DELETE FROM ${table_name} WHERE title = ? AND author = ?;`;
-
-                const nextResult = await dbQuery(sql, paramQuery);
-                
-                if(nextResult?.affectedRows) {
-                    data = {
-                        isDeleted: nextResult.affectedRows,
-                    }
-                }
-
-                message = "Data has been successfully deleted!";
-            }
-
-            else if(result[0].count > 1) {
-                sql = `SELECT * FROM ${table_name} WHERE title = ? AND author = ?;`;
-
-                const nextResult = await dbQuery(sql, paramQuery);
-
-                data = `There is more than one book with same title and author. Please choose based on ID.\n${JSON.stringify(nextResult)}`;
-                message = "success";
-            }
-        }
-        else if(id) {
+        // delete data based on ID
+        if(id) {
             sql = `DELETE FROM ${table_name} WHERE id = ?`;
             paramQuery = [id];
 
             const result = await dbQuery(sql, paramQuery);
 
-            if(result?.affectedRows) {
-                data = {
-                    isDeleted: result.affectedRows,
+            if(result?.affectedRows > 0) {
+                message = `Book with ID ${id} has been successfully deleted!`;
+            }
+            else {
+                throwError(`Failed to delete book with ID ${id}`);
+            }
+        }
+        else if(title && author) {
+            sql = `SELECT COUNT(*) as count FROM ${table_name} WHERE title = ? AND author = ?;`;
+            paramQuery = [title, author];
+
+            const result = await dbQuery(sql, paramQuery);
+
+            // if there is just ONE book with given title and author
+            if(result[0].count === 1) {
+                sql = `DELETE FROM ${table_name} WHERE title = ? AND author = ?;`;
+
+                const nextResult = await dbQuery(sql, paramQuery);
+                
+                if(nextResult?.affectedRows > 0) {
+                    message = "Data has been successfully deleted!";
                 }
             }
-            message = "Data has been successfully deleted!";
+            // if there is just MORE THAN ONE book with given title and author
+            else if(result[0].count > 1) {
+                sql = `SELECT * FROM ${table_name} WHERE title = ? AND author = ?;`;
+
+                const nextResult = await dbQuery(sql, paramQuery);
+
+                message = `There is more than one book with same title and author. Please choose based on ID.`;
+
+                return response(200, JSON.stringify(nextResult, null, 2), message, res);
+            }
+            else {
+                throwError(`There is no book with title ${title} and author name ${author}`, 404);
+            }
         }
-        response(200, data, message, res);
+        else {
+            throwError("Please provide the ID of the book you want to deleted, or you can provide the title and author name of the book.", 400);
+        }
+        
+        response(200, "", message, res);
     }
     catch(error) {
         next(error);
@@ -184,6 +195,7 @@ app.delete("/", async (req, res, next) => {
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+    console.error(err);
     response(statusCode, "", message, res);
 });
 

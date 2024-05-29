@@ -1,0 +1,25 @@
+@server = 127.0.0.1:8000
+
+### get all data/ without query
+GET http://{{server}}/
+###
+
+### get data with query title
+GET http://{{server}}/?title=Girls%20in%20The%20Dark
+###
+
+### get data with query author
+GET http://{{server}}/?author=Akiyoshi%20Rikako
+###
+
+### get data with query title and author
+GET http://{{server}}/?title=Girls%20in%20The%20Dark&author=Akiyoshi%20Rikako
+###
+
+### get data with non acceptable query
+GET http://{{server}}/?coba=ngawur
+###
+
+### get data with query title and non acceptable query
+GET http://{{server}}/?title=Girls%20in%20The%20Dark&coba=ngawur
+###

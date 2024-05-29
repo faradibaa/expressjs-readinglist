@@ -1,0 +1,70 @@
+@server = 127.0.0.1:8000
+
+### add new data
+POST http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"Gagal Menjadi Manusia", 
+    "author":"Dazai Osamu", 
+    "publisher":"Penerbit Lain", 
+    "total_page":156, 
+    "current_page":18, 
+    "status":"Reading"
+}
+###
+
+### there is missing property
+POST http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"I Am A Cat", 
+    "author":"Soseki Natsume", 
+    "total_page":532, 
+    "current_page":0, 
+    "status":"TBR"
+}
+###
+
+### total_page is not number
+POST http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"I Am A Cat", 
+    "author":"Soseki Natsume", 
+    "publisher":"Immortal Publishing",
+    "total_page":"total", 
+    "current_page":0, 
+    "status":"TBR"
+}
+###
+
+### current_page is not number
+POST http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"I Am A Cat", 
+    "author":"Soseki Natsume", 
+    "publisher":"Immortal Publishing",
+    "total_page":532, 
+    "current_page":null, 
+    "status":"TBR"
+}
+###
+
+### current_page is greater than total_page 
+POST http://{{server}}/
+Content-Type: application/json
+
+{
+    "title":"I Am A Cat", 
+    "author":"Soseki Natsume", 
+    "publisher":"Immortal Publishing",
+    "total_page":532, 
+    "current_page":555, 
+    "status":"TBR"
+}
+###
