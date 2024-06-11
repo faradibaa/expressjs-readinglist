@@ -1,8 +1,8 @@
 import { Sequelize, DataTypes } from "sequelize";
-import sequelize from "../databases/readingDatabase.js";
+import sequelize from "../databases/journalDatabase.js";
 
-const Reading = sequelize.define(
-  'Reading',
+const Journal = sequelize.define(
+  'Journal',
   {
     title: {
       type: DataTypes.STRING, // VARCHAR(255)
@@ -30,4 +30,4 @@ const Reading = sequelize.define(
   }
 );
 
-export default Reading;
+export default Journal;

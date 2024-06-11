@@ -1,4 +1,4 @@
-POST http://localhost:8888/reading
+POST http://localhost:8888/journals
 {
   "title": "Motherhood",
   "author": "Minato Kanae",
@@ -8,7 +8,7 @@ POST http://localhost:8888/reading
   "status": "Reading"
 }
 
-PUT http://localhost:8888/reading/3
+PUT http://localhost:8888/journals/3
 {
     "current_page": 111,
     "status": "Reading"

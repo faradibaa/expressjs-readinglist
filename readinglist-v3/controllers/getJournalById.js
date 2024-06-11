@@ -1,8 +1,8 @@
 import asyncHandler from 'express-async-handler';
-import Reading from "../models/readingModel.js";
+import Journal from "../models/journalModels.js";
 
-const getReadingData = asyncHandler(async (req, res, next) => {
-  const bookInfo = await Reading.findAll({
+const getJournalById = asyncHandler(async (req, res, next) => {
+  const bookInfo = await Journal.findAll({
     where: {
       id: req.params.bookId,
     },
@@ -11,4 +11,4 @@ const getReadingData = asyncHandler(async (req, res, next) => {
   res.status(200).json(bookInfo);
 });
 
-export default getReadingData;
+export default getJournalById;

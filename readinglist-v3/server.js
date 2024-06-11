@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import readingRouter from './routes/readingRoutes.js';
+import readingRouter from './routes/journalRoutes.js';
 
 dotenv.config();
 const app = express();

@@ -1,11 +1,11 @@
 import asyncHandler from 'express-async-handler';
-import Reading from "../models/readingModel.js";
+import Journal from "../models/journalModels.js";
 
-const addNewReadingData = asyncHandler(async (req, res, next) => {
+const addNewJournal = asyncHandler(async (req, res, next) => {
   const { title, author, publisher, total_page, current_page, status } = req.body
 
   try {
-    const book = await Reading.create({
+    const book = await Journal.create({
       title: title,
       author: author,
       publisher: publisher,
@@ -22,4 +22,4 @@ const addNewReadingData = asyncHandler(async (req, res, next) => {
   res.status(200).send("Add new data to the list.");
 });
 
-export default addNewReadingData;
+export default addNewJournal;

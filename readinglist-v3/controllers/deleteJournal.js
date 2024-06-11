@@ -1,8 +1,8 @@
 import asyncHandler from 'express-async-handler';
-import Reading from "../models/readingModel.js";
+import Journal from "../models/journalModels.js";
 
-const deleteReadingData = asyncHandler(async (req, res, next) => {
-  const deleteBook = await Reading.destroy({
+const deleteJournal = asyncHandler(async (req, res, next) => {
+  const deleteBook = await Journal.destroy({
     where: {
       id: req.params.bookId,
     }
@@ -11,4 +11,4 @@ const deleteReadingData = asyncHandler(async (req, res, next) => {
   res.status(200).send(`Delete data of the book with ID: ${req.params.bookId}.`);
 });
 
-export default deleteReadingData;
+export default deleteJournal;
