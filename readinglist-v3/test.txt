@@ -1,0 +1,15 @@
+POST http://localhost:8888/reading
+{
+  "title": "Motherhood",
+  "author": "Minato Kanae",
+  "publisher": "Penerbit Haru",
+  "total_page": 300,
+  "current_page": 80,
+  "status": "Reading"
+}
+
+PUT http://localhost:8888/reading/3
+{
+    "current_page": 111,
+    "status": "Reading"
+}
