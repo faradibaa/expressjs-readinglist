@@ -10,24 +10,31 @@ const getAllJournal = asyncHandler(async (req, res, next) => {
   // get data based on query parameters; if query param is empty, then it will get all data
   let queryParams = {};
   for(const query in req.query) {
-    if(req.query[query] && !req.query.page && !req.query.limit) {
+    console.log(`Query: ${query}`);
+    if(req.query[query] && query!=="page" && query!=="limit") {
       queryParams[query] = req.query[query];
     }
   }
-
+  
   const { count, rows } = await Journal.findAndCountAll({
     where: queryParams,
-    limit,
     offset,
+    limit,
   });
 
-  res.status(200).json({ 
+  const journals = { 
     total_data: count,
-    page,
+    last_page: Math.ceil(count/limit),
+    current_page: page,
+    data_per_page: limit,
     from_data: offset+1,
     to_data: count<(offset+limit) ? count : offset+limit,
     data: rows
-  });
+  }
+
+  // res.status(200).json(journals);
+
+  res.render('app', journals); // app.ejs
 });
 
 export default getAllJournal;

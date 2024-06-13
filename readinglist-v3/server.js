@@ -9,6 +9,9 @@ const port = process.env.PORT || 5000;
 
 app.use(express.json());
 
+app.set('view engine', 'ejs');
+app.set('views', 'views'); // views directory name
+
 app.use('/', readingRouter);
 
 app.listen(port, () => {

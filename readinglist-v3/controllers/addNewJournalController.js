@@ -5,7 +5,7 @@ const addNewJournal = asyncHandler(async (req, res, next) => {
   const { title, author, publisher, total_page, current_page, status } = req.body
 
   try {
-    const book = await Journal.create({
+    await Journal.create({
       title: title,
       author: author,
       publisher: publisher,

@@ -1,13 +1,13 @@
 import express from 'express';
 import getAllJournal from '../controllers/getJournalsController.js';
-import getJournalById from '../controllers/getJournalById.js';
-import addNewJournal from '../controllers/addNewJournal.js';
-import updateJournal from '../controllers/updateJournal.js';
-import deleteJournal from '../controllers/deleteJournal.js';
+import getJournalById from '../controllers/getJournalByIdController.js';
+import addNewJournal from '../controllers/addNewJournalController.js';
+import updateJournal from '../controllers/updateJournalController.js';
+import deleteJournal from '../controllers/deleteJournalController.js';
 
 const readingRouter = express.Router();
 
 readingRouter.route('/journals').get(getAllJournal).post(addNewJournal);
-readingRouter.route('/journals/:bookId').get(getJournalById).put(updateJournal).delete(deleteJournal);
+readingRouter.route('/journals/:journalId').get(getJournalById).put(updateJournal).delete(deleteJournal);
 
 export default readingRouter;
