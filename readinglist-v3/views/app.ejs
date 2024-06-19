@@ -4,25 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reading Journal</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div>
+  <%- include('partials/navbar') %>
+
+  <div class="page-title">
     <h1>Reading Journal</h1>
   </div>
 
-  <div>
-    <p></p><% data.forEach(data => { %>
+  
+  <% data.forEach(data => { %>
+    <div class="journal-info">
       <p><b><%= data.title %></b></p>
-      <ul>
+      <ul class="journal-list">
         <li>Author: <%= data.author %></li>
         <li>Publisher: <%= data.publisher %></li>
         <li>Total page: <%= data.total_page %></li>
         <li>Last page read: <%= data.current_page %></li>
         <li>Status: <%= data.status %></li><br>
       </ul>
-    <% }) %>
-  </div>
+    </div>
+  <% }) %>
+  
 
   <div>
     <% if (current_page > 1) { %>

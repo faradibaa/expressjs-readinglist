@@ -14,12 +14,12 @@ const addNewJournal = asyncHandler(async (req, res, next) => {
       status: status
     });
     console.log("Add new data to the list.");
+
+    res.status(200).send("Add new data to the list.");
   }
   catch(err) {
-    console.log("Failed to create new data", err);
+    res.render('error-page', {status_code: 500, message: err});
   }
-
-  res.status(200).send("Add new data to the list.");
 });
 
 export default addNewJournal;

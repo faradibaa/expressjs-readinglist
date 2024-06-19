@@ -1,0 +1,47 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+}
+
+header {
+  display: flex;
+  /* justify-content: space-between; */
+  justify-content: flex-end;
+  align-items: center;
+  padding: 30px 10%;
+}
+
+.nav-links li {
+  display: inline-block;
+  padding: 0px 20px;
+}
+
+.nav-links li a {
+  transition: all 0.3s ease 0s;
+  font-weight: 500;
+  font-size: 16px;
+  color: #000000;
+  text-decoration: none;
+}
+
+.nav-links li a:hover {
+  color: #0088a9;
+}
+
+.journal-info {
+  text-align: center;
+  padding: 10px 0 0 0;
+  margin: 10px 40%;
+  border: 2px solid black;
+}
+
+.page-title {
+  text-align: center;
+  padding: 10px;
+}
+
+ul.journal-list {
+  list-style-type: none;
+}
