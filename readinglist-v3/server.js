@@ -14,10 +14,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 app.use(express.json());
 
 app.set('view engine', 'ejs');
-app.set('views', 'views'); // views directory's name (./views/)
+app.set('views', path.join(__dirname, 'views')); // views directory's name (./views/)
 
-app.use('/', readingRouter);
 app.use(express.static(path.join(__dirname, 'public'))); // use CSS styling inside directory './public/`
+app.use('/', readingRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
