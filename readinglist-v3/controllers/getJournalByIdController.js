@@ -8,9 +8,22 @@ const getJournalById = asyncHandler(async (req, res, next) => {
         id: req.params.journalId,
       },
     });
-    console.log(`Get data of the book with ID: ${req.params.journalId}. Result: ${bookInfo}`);
-  
-    res.render('highlight', {data: bookInfo});
+
+    const plainBookInfo = bookInfo.map(book => book.toJSON());
+    
+    const getJournal = {
+      data: plainBookInfo,
+    }
+
+    // debugging
+    // console.log(`Get data of the book with ID: ${req.params.journalId}`);
+    // console.log(`Raw result of query:`);
+    // console.dir(bookInfo, {depth: null});
+    // console.log(`After convent sequelize instance to plain object:`);
+    // console.dir(plainBookInfo, {depth: null});
+
+    // res.status(200).json(getJournal);
+    res.render('highlight', getJournal);
   }
   catch(err) {
     res.render('error-page', {status_code: 500, message: err});

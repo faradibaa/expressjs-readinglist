@@ -7,7 +7,8 @@ import deleteJournal from '../controllers/deleteJournalController.js';
 
 const readingRouter = express.Router();
 
-readingRouter.route('/journals').get(getAllJournal).post(addNewJournal);
+readingRouter.route('/dashboard').get(getAllJournal);
+readingRouter.route('/journals').post(addNewJournal);
 readingRouter.route('/journals/:journalId').get(getJournalById).put(updateJournal).delete(deleteJournal);
 
 export default readingRouter;

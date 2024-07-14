@@ -14,16 +14,14 @@
     <h1>Highlight Today</h1>
   </div>
 
-  <p><%= data %></p>
-
   <div class="journal-info">
-    <p><b><%= data.title %></b></p>
+    <p><b><%= data[0].title %></b></p>
     <ul class="journal-list">
-      <% for(let key in data) { %>
-        <% if(data.hasOwnProperty(key)) { %>
-          <li><%= data[key] %></li>
-        <% } %>
-      <% } %>
+      <li>Author: <%= data[0].author %></li>
+      <li>Publisher: <%= data[0].publisher %></li>
+      <li>Total page: <%= data[0].total_page %></li>
+      <li>Currently-reading page: <%= data[0].current_page %></li>
+      <li>Reading status: <%= data[0].status %></li>
     </ul>
   </div>
 </body>
