@@ -27,15 +27,18 @@
       </ul>
     </div>
   <% }) %>
-  
 
   <div>
     <% if (current_page > 1) { %>
-      <button>Previous</button>
+      <a href="/dashboard?page=<%= Number(current_page) - 1 %>">
+        <button>Previous</button>
+      </a>
     <% } %>
     <span><%= current_page %></span>
     <% if (current_page < last_page) { %>
-      <button>Next</button>
+      <a href="/dashboard?page=<%= Number(current_page) + 1 %>">
+        <button>Next</button>
+      </a>
     <% } %>
   </div>
 

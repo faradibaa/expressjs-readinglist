@@ -34,7 +34,7 @@ const getAllJournal = asyncHandler(async (req, res, next) => {
   
     // res.status(200).json(journals);
   
-    res.render('app', journals); // app.ejs
+    res.render('dashboard', journals); // app.ejs
   }
   catch(err) {
     res.render('error-page', {status_code: 500, message: err});
